@@ -1,0 +1,47 @@
+---
+title: "Billboard Graphic"
+execute:
+    echo: false
+---
+
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+
+```{r}
+billboard |>
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    values_to = "rank"
+  ) |>
+  mutate(
+    week = readr::parse_number(week)
+  ) |>
+  filter(!is.na(rank)) |>
+  group_by(track, artist) |>
+  mutate(peak_rank = min(rank)) |>
+  ungroup() |>
+  filter(peak_rank <= 10) |>
+  ggplot(aes(x = week, y = rank, group = interaction(track, artist))) +
+  geom_line(aes(color = peak_rank), alpha = 0.5, linewidth = 0.8) +
+  scale_y_reverse() +
+  scale_color_gradient(low = "gold", high = "purple") +
+  labs(
+    title = "Chart Trajectories of Billboard Top 10 Songs",
+    subtitle = "Each line shows how a song's rank changed over the weeks after entering the chart",
+    x = "Week on Chart",
+    y = "Billboard Rank",
+    color = "Best Rank",
+    caption = "Billboard dataset from tidyr package"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    plot.subtitle = element_text(size = 11, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    legend.position = "right"
+  )
+```
+
